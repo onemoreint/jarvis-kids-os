@@ -22,11 +22,14 @@ win:
   # icon: build/icon.ico   # se añadirá en una fase posterior
 
 nsis:
-  oneClick: false
+  # Instalador de un clic: doble clic → aceptar UAC → instalada y abierta.
+  oneClick: true
   # Instalación para todos los usuarios: necesario para que la futura cuenta
   # infantil (Assigned Access) pueda usar la app instalada por el adulto.
   perMachine: true
-  allowToChangeInstallationDirectory: true
+  runAfterFinish: true
+  # Nombre fijo para que el link de descarga "latest" nunca cambie.
+  artifactName: JARVIS-KIDS-OS-Setup.exe
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: JARVIS KIDS OS
