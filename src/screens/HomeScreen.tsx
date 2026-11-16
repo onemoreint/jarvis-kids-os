@@ -16,9 +16,10 @@ function greetingFor(date: Date): { text: string; emoji: string } {
 interface Props {
   onOpenCategory: (id: CategoryId) => void;
   onOpenParent: () => void;
+  onExit: () => void;
 }
 
-export function HomeScreen({ onOpenCategory, onOpenParent }: Props) {
+export function HomeScreen({ onOpenCategory, onOpenParent, onExit }: Props) {
   const now = useNow();
   const greeting = greetingFor(now);
   const [version, setVersion] = useState<string | null>(null);
@@ -66,7 +67,9 @@ export function HomeScreen({ onOpenCategory, onOpenParent }: Props) {
       {/* Categorías */}
       <section
         aria-label="Categorías"
-        className="flex flex-1 flex-wrap content-center items-center justify-center gap-[3vh] px-4 py-[2vh]"
+        // Máximo 4 tarjetas por fila → 8 categorías en 2 filas de 4.
+        style={{ maxWidth: 'calc(var(--card) * 4 + 9vh + 2rem)' }}
+        className="mx-auto flex flex-1 flex-wrap content-center items-center justify-center gap-[3vh] px-4 py-[2vh]"
       >
         {CATEGORIES.map((category, i) => (
           <CategoryCard key={category.id} category={category} index={i} onSelect={handleSelect} />
@@ -79,8 +82,20 @@ export function HomeScreen({ onOpenCategory, onOpenParent }: Props) {
         <p className="text-center text-base font-semibold text-white/60">
           Desarrollado por: <span className="font-black text-white/80">José Lugo</span> · 3126387467
         </p>
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
           <ParentLockButton onUnlockRequest={onOpenParent} />
+          <button
+            type="button"
+            onClick={onExit}
+            aria-label="Salir de la app"
+            className="flex h-16 items-center gap-3 rounded-full bg-rose-500/20 px-6 ring-1 ring-rose-300/40 backdrop-blur transition hover:bg-rose-500/30 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70"
+          >
+            <span className="text-2xl font-black text-rose-200">⏻</span>
+            <span className="text-left leading-tight">
+              <span className="block text-lg font-black">Salir</span>
+              <span className="block text-xs font-semibold text-white/60">Cerrar la app</span>
+            </span>
+          </button>
         </div>
       </footer>
     </main>

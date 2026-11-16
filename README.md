@@ -8,7 +8,7 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 - Destino: Windows 11 Pro (x64)
 - Tecnologías: Electron · React · TypeScript · Vite · Tailwind CSS
 
-> **Estado: v0.2** — pantalla de inicio, panel de padres con PIN, lista blanca de
+> **Estado: v0.3** — pantalla de inicio, panel de padres con PIN, lista blanca de
 > videos/listas/canales de YouTube y reproductor protegido. Ver el plan completo en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ---
@@ -18,7 +18,20 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 1. Descarga: <https://github.com/onemoreint/jarvis-kids-os/releases/latest/download/JARVIS-KIDS-OS-Setup.exe>
 2. Doble clic → SmartScreen: «Más información» → «Ejecutar de todas formas» → aceptar el aviso de administrador.
 3. Se instala para todos los usuarios y se abre sola.
-4. **Actualizar**: primero sal de la app (⚙️ Padres → Salir de la app), descarga de nuevo el mismo link y ejecútalo. Se conservan el PIN y los videos.
+4. **Actualizar**: primero sal de la app (botón ⏻ Salir + PIN; o usa el script de abajo, que la cierra solo), descarga de nuevo el mismo link y ejecútalo. Se conservan el PIN y los videos.
+
+### Instalar videos con un script (sin abrir el panel)
+
+1. Descarga <https://github.com/onemoreint/jarvis-kids-os/releases/latest/download/Instalar-Videos-JARVIS.bat>
+2. Doble clic (en la cuenta de Windows donde se usa la app; no hace falta "Ejecutar como administrador").
+   Si Windows avisa: «Más información» → «Ejecutar de todas formas».
+3. El script cierra la app, la actualiza a la última versión, deja la lista de videos y la vuelve a abrir.
+   Los videos aparecen solos en unos segundos.
+
+Para cambiar los videos, abre el `.bat` con el Bloc de notas y edita la lista
+(`[Categoría]` y debajo los enlaces). El resultado de cada importación queda en
+`%APPDATA%\JARVIS KIDS OS\importado-<fecha>.txt`. También puedes crear a mano
+`%APPDATA%\JARVIS KIDS OS\importar.txt` con el mismo formato: se importa al abrir la app.
 
 ### Uso del panel de padres
 
@@ -26,7 +39,7 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 - **Añadir videos**: pega enlaces de YouTube, YouTube Kids, listas de reproducción o canales (`youtube.com/@nombre`), elige la categoría y pulsa Añadir.
 - **✨ Añadir paquete sugerido**: carga una selección inicial de canales educativos.
 - Cada elemento se puede **mover** de categoría o **quitar** cuando quieras.
-- **Salir de la app** solo desde el panel (Alt+F4 está bloqueado).
+- **Salir de la app**: botón **⏻ Salir** en la pantalla principal (pide el PIN). Alt+F4 está bloqueado.
 - Los datos se guardan en `%APPDATA%\JARVIS KIDS OS\` (`content.json` y `pin.json`).
 
 Para publicar una versión nueva desde la Mac: subir `version` en `package.json`,

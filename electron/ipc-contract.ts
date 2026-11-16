@@ -9,6 +9,7 @@ export const CATEGORY_IDS = [
   'ciencias',
   'musica',
   'cuentos',
+  'dibujos',
 ] as const;
 
 export type CategoryId = (typeof CATEGORY_IDS)[number];
@@ -65,4 +66,6 @@ export interface JarvisBridge {
   moveContent: (id: string, category: CategoryId) => Promise<void>;
   addStarterPack: () => Promise<AddResult>;
   quitApp: () => Promise<void>;
+  /** Avisa cuando la lista cambia desde fuera (importación). Devuelve cómo dejar de escuchar. */
+  onContentChanged: (callback: () => void) => () => void;
 }

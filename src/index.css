@@ -23,8 +23,9 @@
 }
 
 :root {
-  /* Tamaño de las tarjetas de categoría: 2 filas caben incluso a 720 px de alto. */
-  --card: clamp(9rem, 27vh, 16rem);
+  /* Tamaño de las tarjetas de categoría: siempre 2 filas de 4, quepan por alto
+     (720 px con escalado 150 %) y por ancho (pantallas casi cuadradas). */
+  --card: clamp(8rem, min(27vh, calc((100vw - 9rem) / 4.6)), 16rem);
 }
 
 html,

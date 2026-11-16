@@ -78,6 +78,15 @@ export const CATEGORIES: readonly Category[] = [
     gradient: 'from-yellow-200 via-amber-300 to-yellow-500',
     glow: 'shadow-yellow-500/40',
   },
+  {
+    id: 'dibujos',
+    name: 'Dibujos',
+    emoji: '📺',
+    spoken: 'Dibujos animados. ¡A divertirse!',
+    hint: 'Tus caricaturas favoritas',
+    gradient: 'from-teal-200 via-cyan-400 to-teal-500',
+    glow: 'shadow-teal-500/40',
+  },
 ];
 
 export function getCategory(id: CategoryId): Category {

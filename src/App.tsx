@@ -12,7 +12,7 @@ type Route =
   | { name: 'home' }
   | { name: 'category'; id: CategoryId }
   | { name: 'player'; item: ContentItem; from: CategoryId }
-  | { name: 'parent-gate' }
+  | { name: 'parent-gate'; then: 'panel' | 'exit' }
   | { name: 'parent-panel' };
 
 export default function App() {
@@ -29,6 +29,8 @@ export default function App() {
 
   useEffect(() => {
     void refresh();
+    // Refrescar cuando la app importa videos al arrancar.
+    return window.jarvis?.onContentChanged(() => void refresh());
   }, [refresh]);
 
   // Sin menú contextual ni arrastre de elementos: nada que "explorar".
@@ -43,8 +45,15 @@ export default function App() {
   }, []);
 
   const goHome = useCallback(() => setRoute({ name: 'home' }), []);
-  const openCategory = useCallback((id: CategoryId) => setRoute({ name: 'category', id }), []);
-  const openGate = useCallback(() => setRoute({ name: 'parent-gate' }), []);
+  const openCategory = useCallback(
+    (id: CategoryId) => {
+      void refresh();
+      setRoute({ name: 'category', id });
+    },
+    [refresh],
+  );
+  const openGate = useCallback(() => setRoute({ name: 'parent-gate', then: 'panel' }), []);
+  const openExit = useCallback(() => setRoute({ name: 'parent-gate', then: 'exit' }), []);
   const openPanel = useCallback(() => setRoute({ name: 'parent-panel' }), []);
   const closePanel = useCallback(() => {
     void window.jarvis?.lockParent();
@@ -55,7 +64,7 @@ export default function App() {
   let screen: React.ReactNode;
   switch (route.name) {
     case 'home':
-      screen = <HomeScreen onOpenCategory={openCategory} onOpenParent={openGate} />;
+      screen = <HomeScreen onOpenCategory={openCategory} onOpenParent={openGate} onExit={openExit} />;
       break;
     case 'category':
       screen = (
@@ -72,7 +81,13 @@ export default function App() {
       screen = <PlayerScreen item={route.item} onBack={() => openCategory(route.from)} />;
       break;
     case 'parent-gate':
-      screen = <ParentGate onUnlocked={openPanel} onCancel={goHome} />;
+      screen = (
+        <ParentGate
+          title={route.then === 'exit' ? 'Salir de JARVIS' : undefined}
+          onUnlocked={route.then === 'exit' ? () => void window.jarvis?.quitApp() : openPanel}
+          onCancel={goHome}
+        />
+      );
       break;
     case 'parent-panel':
       screen = <ParentPanel items={items} onChanged={refresh} onSessionExpired={openGate} onClose={closePanel} />;

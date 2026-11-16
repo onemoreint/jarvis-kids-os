@@ -198,6 +198,17 @@ function createWindow(): void {
 
   mainWindow.once('ready-to-show', () => mainWindow?.show());
 
+  // Importación pendiente (script "Instalar videos"): cuando la interfaz ya
+  // cargó, se procesa importar.txt y se avisa a la interfaz para refrescar.
+  mainWindow.webContents.once('did-finish-load', () => {
+    content
+      .importFromFile()
+      .then((result) => {
+        if (result?.added.length) mainWindow?.webContents.send('content:changed');
+      })
+      .catch((err: unknown) => console.error('[importar]', err));
+  });
+
   // Alt+F4 / cerrar ventana: bloqueado salvo salida con PIN.
   mainWindow.on('close', (event) => {
     if (!allowQuit) event.preventDefault();

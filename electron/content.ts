@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
 import { CATEGORY_IDS, type AddResult, type CategoryId, type ContentItem } from './ipc-contract';
 import { STARTER_PACK } from './starter-pack';
-import { readJson, writeJson } from './store';
+import { dataPath, readJson, writeJson } from './store';
 import { PLAYLIST_ID, VIDEO_ID, fetchMeta, parseYouTubeInput, resolveChannel, type ParsedYouTube } from './youtube';
 
 // Lista blanca persistente (content.json). El proceso principal es la única
@@ -119,6 +120,79 @@ export async function addStarterPack(): Promise<AddResult> {
   const result: AddResult = { added: [], errors: [] };
   for (const entry of STARTER_PACK) await addOne(entry.url, entry.category, result, true);
   if (result.added.length) save();
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Importación desde archivo (para el script de Windows "Instalar videos")
+// ---------------------------------------------------------------------------
+// Si existe %APPDATA%\JARVIS KIDS OS\importar.txt, al abrir la app se añaden
+// sus enlaces. Formato:
+//   [Música]
+//   https://youtu.be/…
+//   # comentario
+// Después se renombra a importado-<fecha>.txt con el resultado. Si no hay
+// Internet, el archivo se conserva para reintentarlo en el próximo arranque.
+
+export const IMPORT_FILE = 'importar.txt';
+
+function normalizeCategory(raw: string): CategoryId | null {
+  const key = raw
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .trim();
+  return isCategory(key) ? key : null;
+}
+
+export async function importFromFile(): Promise<AddResult | null> {
+  const file = dataPath(IMPORT_FILE);
+  if (!fs.existsSync(file)) return null;
+
+  const text = fs.readFileSync(file, 'utf8').replace(/^﻿/, '').slice(0, 200_000);
+  const result: AddResult = { added: [], errors: [] };
+  let category: CategoryId | null = null;
+  let offline = false;
+
+  outer: for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+
+    const header = /^\[(.+)\]$/.exec(line);
+    if (header) {
+      category = normalizeCategory(header[1] ?? '');
+      if (!category) result.errors.push({ input: line, reason: 'Categoría desconocida.' });
+      continue;
+    }
+    for (const token of line.split(/\s+/)) {
+      if (!category) {
+        result.errors.push({ input: token, reason: 'Falta la categoría ([Nombre]) antes del enlace.' });
+        continue;
+      }
+      await addOne(token, category, result, true);
+      if (result.errors.at(-1)?.reason.startsWith('Sin conexión')) {
+        offline = true;
+        break outer;
+      }
+    }
+  }
+
+  if (result.added.length) save();
+
+  if (!offline) {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const report = [
+      text.trimEnd(),
+      '',
+      `# --- Resultado ${new Date().toLocaleString('es')} ---`,
+      `# Añadidos: ${result.added.length}`,
+      ...result.added.map((a) => `#   ✔ [${a.category}] ${a.title}`),
+      ...result.errors.map((e) => `#   ✖ ${e.input} → ${e.reason}`),
+      '',
+    ].join('\n');
+    fs.writeFileSync(dataPath(`importado-${stamp}.txt`), report, 'utf8');
+    fs.rmSync(file, { force: true });
+  }
   return result;
 }
 

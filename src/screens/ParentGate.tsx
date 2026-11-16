@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
 interface Props {
+  /** Título alternativo (p. ej. "Salir de JARVIS"). */
+  title?: string;
   onUnlocked: () => void;
   onCancel: () => void;
 }
@@ -8,7 +10,7 @@ interface Props {
 type Mode = 'loading' | 'create' | 'confirm' | 'verify';
 
 /** Pantalla de PIN: crear (primera vez) o verificar. */
-export function ParentGate({ onUnlocked, onCancel }: Props) {
+export function ParentGate({ title: customTitle, onUnlocked, onCancel }: Props) {
   const [mode, setMode] = useState<Mode>('loading');
   const [pin, setPin] = useState('');
   const [firstPin, setFirstPin] = useState('');
@@ -100,13 +102,15 @@ export function ParentGate({ onUnlocked, onCancel }: Props) {
       ? 'Crea un PIN de padres'
       : mode === 'confirm'
         ? 'Repite el PIN'
-        : 'PIN de padres';
+        : (customTitle ?? 'PIN de padres');
   const subtitle =
     mode === 'create'
       ? 'De 4 a 6 números. Guárdalo en un lugar seguro.'
       : mode === 'confirm'
         ? 'Para comprobar que lo escribiste bien.'
-        : 'Solo para adultos.';
+        : customTitle
+          ? 'Escribe el PIN de padres para cerrar la app.'
+          : 'Solo para adultos.';
 
   return (
     <main className="flex h-full items-center justify-center bg-[#0b1026]/80 backdrop-blur">

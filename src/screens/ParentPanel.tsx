@@ -79,7 +79,7 @@ export function ParentPanel({ items, onChanged, onSessionExpired, onClose }: Pro
         <div className="flex gap-3">
           {confirmQuit ? (
             <>
-              <span className="self-center font-semibold text-white/70">¿Cerrar JARVIS?</span>
+              <span className="self-center font-semibold text-white/70">¿Salir y cerrar la app?</span>
               <PanelButton tone="danger" onClick={quit} disabled={busy !== null}>
                 Sí, cerrar
               </PanelButton>
@@ -87,7 +87,7 @@ export function ParentPanel({ items, onChanged, onSessionExpired, onClose }: Pro
             </>
           ) : (
             <PanelButton tone="ghost" onClick={() => setConfirmQuit(true)}>
-              Salir de la app
+              ⏻ Salir de la app y finalizar
             </PanelButton>
           )}
           <PanelButton tone="primary" onClick={onClose}>

@@ -18,6 +18,11 @@ const bridge: JarvisBridge = {
   moveContent: (id, category) => invoke('content:move', id, category),
   addStarterPack: () => invoke('content:add-starter'),
   quitApp: () => invoke('app:quit'),
+  onContentChanged: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on('content:changed', listener);
+    return () => ipcRenderer.removeListener('content:changed', listener);
+  },
 };
 
 contextBridge.exposeInMainWorld('jarvis', Object.freeze(bridge));
