@@ -1,0 +1,45 @@
+{
+  "name": "jarvis-kids-os",
+  "productName": "JARVIS KIDS OS",
+  "version": "0.1.0",
+  "description": "Central infantil de aprendizaje y entretenimiento (3 a 6 años) con contenido aprobado por los padres.",
+  "author": "JARVIS KIDS OS",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n vite,electron -c cyan,magenta \"vite\" \"npm:dev:electron\"",
+    "dev:electron": "wait-on tcp:127.0.0.1:5173 && tsc -p tsconfig.electron.json && electron . --dev-server=http://127.0.0.1:5173",
+    "dev:web": "vite",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "build": "tsc -p tsconfig.json --noEmit && vite build && tsc -p tsconfig.electron.json",
+    "start": "npm run build && electron .",
+    "dist:win": "npm run build && electron-builder --win --x64",
+    "dist:mac": "npm run build && electron-builder --mac --arm64"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/node": "^22.16.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "concurrently": "^9.2.0",
+    "electron": "^45.3.3",
+    "electron-builder": "^26.0.12",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.4",
+    "wait-on": "^8.0.3"
+  },
+  "allowScripts": {
+    "electron": true,
+    "esbuild": true
+  }
+}

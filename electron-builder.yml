@@ -1,0 +1,40 @@
+# Configuración de empaquetado. La compilación OFICIAL para Windows se hace
+# en la propia laptop Windows 11 (ver docs/WINDOWS.md).
+appId: com.jarviskids.os
+productName: JARVIS KIDS OS
+copyright: Copyright © 2026 JARVIS KIDS OS
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**
+  - dist-electron/**
+  - package.json
+
+asar: true
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  # icon: build/icon.ico   # se añadirá en una fase posterior
+
+nsis:
+  oneClick: false
+  # Instalación para todos los usuarios: necesario para que la futura cuenta
+  # infantil (Assigned Access) pueda usar la app instalada por el adulto.
+  perMachine: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: JARVIS KIDS OS
+
+mac:
+  # Solo para pruebas locales en la Mac de desarrollo (sin firmar).
+  target:
+    - target: dmg
+      arch: [arm64]
+  category: public.app-category.education
+  identity: null
