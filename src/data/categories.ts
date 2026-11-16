@@ -1,11 +1,6 @@
-export type CategoryId =
-  | 'matematicas'
-  | 'letras'
-  | 'ingles'
-  | 'animales'
-  | 'ciencias'
-  | 'musica'
-  | 'cuentos';
+import type { CategoryId } from '../../electron/ipc-contract';
+
+export type { CategoryId };
 
 export interface Category {
   id: CategoryId;

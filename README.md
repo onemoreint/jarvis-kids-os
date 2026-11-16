@@ -8,8 +8,8 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 - Destino: Windows 11 Pro (x64)
 - Tecnologías: Electron · React · TypeScript · Vite · Tailwind CSS
 
-> **Estado: Fase 1** — estructura del proyecto, Electron endurecido y pantalla de
-> inicio funcional. Ver el plan completo en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
+> **Estado: v0.2** — pantalla de inicio, panel de padres con PIN, lista blanca de
+> videos/listas/canales de YouTube y reproductor protegido. Ver el plan completo en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ---
 
@@ -17,7 +17,17 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 
 1. Descarga: <https://github.com/onemoreint/jarvis-kids-os/releases/latest/download/JARVIS-KIDS-OS-Setup.exe>
 2. Doble clic → SmartScreen: «Más información» → «Ejecutar de todas formas» → aceptar el aviso de administrador.
-3. Se instala para todos los usuarios y se abre sola. Para salir en la fase 1: `Alt + F4`.
+3. Se instala para todos los usuarios y se abre sola.
+4. **Actualizar**: primero sal de la app (⚙️ Padres → Salir de la app), descarga de nuevo el mismo link y ejecútalo. Se conservan el PIN y los videos.
+
+### Uso del panel de padres
+
+- Mantén presionado **⚙️ Padres** (abajo a la derecha) → la primera vez creas un PIN de 4–6 números.
+- **Añadir videos**: pega enlaces de YouTube, YouTube Kids, listas de reproducción o canales (`youtube.com/@nombre`), elige la categoría y pulsa Añadir.
+- **✨ Añadir paquete sugerido**: carga una selección inicial de canales educativos.
+- Cada elemento se puede **mover** de categoría o **quitar** cuando quieras.
+- **Salir de la app** solo desde el panel (Alt+F4 está bloqueado).
+- Los datos se guardan en `%APPDATA%\JARVIS KIDS OS\` (`content.json` y `pin.json`).
 
 Para publicar una versión nueva desde la Mac: subir `version` en `package.json`,
 `npm run dist:win:desde-mac` y `gh release create vX.Y.Z release/JARVIS-KIDS-OS-Setup.exe`.

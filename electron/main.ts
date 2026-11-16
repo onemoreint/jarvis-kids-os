@@ -1,8 +1,10 @@
-import { app, BrowserWindow, ipcMain, Menu, net, protocol, session } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, net, protocol, session, type IpcMainInvokeEvent } from 'electron';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import * as content from './content';
 import type { AppInfo } from './ipc-contract';
-import { buildCsp, hardenDefaultSession, lockDownWebContents } from './security';
+import * as pin from './pin';
+import { addYouTubeReferrer, buildCsp, hardenDefaultSession, lockDownWebContents } from './security';
 
 // ---------------------------------------------------------------------------
 // Modo de ejecución
@@ -87,18 +89,75 @@ function applyDevCsp(): void {
   });
 }
 
-function registerIpc(): void {
-  ipcMain.handle('app:get-info', (event): AppInfo => {
-    // Solo responde a nuestra propia interfaz.
+// En producción la app solo se cierra desde el panel de padres (con PIN) o
+// cuando Windows cierra la sesión / se apaga.
+let allowQuit = isDev;
+
+/** Registra un canal IPC que solo responde a nuestra propia interfaz. */
+function handle(channel: string, fn: (...args: unknown[]) => unknown): void {
+  ipcMain.handle(channel, (event: IpcMainInvokeEvent, ...args: unknown[]) => {
     if (!event.senderFrame || !isAppUrl(event.senderFrame.url)) {
       throw new Error('Origen no autorizado');
     }
-    return {
-      name: 'JARVIS KIDS OS',
-      version: app.getVersion(),
-      platform: process.platform,
-      isDev,
-    };
+    return fn(...args);
+  });
+}
+
+/** Acciones de adultos: exigen la sesión de padres desbloqueada. */
+function requireParent(): void {
+  if (!pin.isUnlocked()) throw new Error('LOCKED');
+  pin.touch();
+}
+
+const asString = (v: unknown, max = 5000): string => (typeof v === 'string' ? v.slice(0, max) : '');
+
+function registerIpc(): void {
+  handle('app:get-info', (): AppInfo => ({
+    name: 'JARVIS KIDS OS',
+    version: app.getVersion(),
+    platform: process.platform,
+    isDev,
+  }));
+
+  // Lectura pública (la necesita la interfaz infantil).
+  handle('content:list', () => content.list());
+
+  // PIN
+  handle('pin:status', () => pin.status());
+  handle('pin:create', (p) => pin.create(asString(p, 6)));
+  handle('pin:verify', (p) => pin.verify(asString(p, 6)));
+  handle('pin:change', (current, next) => {
+    requireParent();
+    return pin.change(asString(current, 6), asString(next, 6));
+  });
+  handle('parent:lock', () => pin.lock());
+
+  // Gestión de contenido (solo adultos)
+  handle('content:add', (text, category) => {
+    requireParent();
+    if (!content.isCategory(category)) throw new Error('Categoría no válida');
+    return content.addFromText(asString(text), category);
+  });
+  handle('content:remove', (id) => {
+    requireParent();
+    content.remove(asString(id, 100));
+  });
+  handle('content:add-starter', () => {
+    requireParent();
+    return content.addStarterPack();
+  });
+
+  handle('content:move', (id, category) => {
+    requireParent();
+    if (!content.isCategory(category)) throw new Error('Categoría no válida');
+    content.move(asString(id, 100), category);
+  });
+
+  handle('app:quit', () => {
+    requireParent();
+    allowQuit = true;
+    pin.lock();
+    setImmediate(() => app.quit());
   });
 }
 
@@ -114,7 +173,7 @@ function createWindow(): void {
     minWidth: 1024,
     minHeight: 700,
     // Pantalla completa en producción. En desarrollo, ventana normal para
-    // poder trabajar. La salida protegida con PIN llega en la fase 2.
+    // poder trabajar. Salir: panel de padres (PIN) → "Salir de la app".
     fullscreen: !isDev,
     autoHideMenuBar: true,
     backgroundColor: '#0b1026',
@@ -132,10 +191,24 @@ function createWindow(): void {
       webviewTag: false,
       spellcheck: false,
       devTools: isDev,
+      // El niño ya tocó el video: permitimos que empiece sin otro gesto.
+      autoplayPolicy: 'no-user-gesture-required',
     },
   });
 
   mainWindow.once('ready-to-show', () => mainWindow?.show());
+
+  // Alt+F4 / cerrar ventana: bloqueado salvo salida con PIN.
+  mainWindow.on('close', (event) => {
+    if (!allowQuit) event.preventDefault();
+  });
+  // Pero nunca impedimos que Windows cierre sesión o se apague.
+  mainWindow.on('query-session-end', () => {
+    allowQuit = true;
+  });
+  mainWindow.on('session-end', () => {
+    allowQuit = true;
+  });
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -162,9 +235,20 @@ if (!app.requestSingleInstanceLock()) {
 
   lockDownWebContents(isAppUrl);
 
+  app.on('before-quit', (event) => {
+    if (!allowQuit) event.preventDefault();
+  });
+
   void app.whenReady().then(() => {
-    Menu.setApplicationMenu(null);
+    // Sin menú en Windows. En macOS (solo desarrollo) dejamos el menú Edición
+    // para que funcionen Cmd+C / Cmd+V en el panel de padres.
+    Menu.setApplicationMenu(
+      process.platform === 'darwin'
+        ? Menu.buildFromTemplate([{ label: 'JARVIS', submenu: [{ role: 'about' }] }, { role: 'editMenu' }])
+        : null,
+    );
     hardenDefaultSession();
+    addYouTubeReferrer();
     registerAppProtocol();
     applyDevCsp();
     registerIpc();

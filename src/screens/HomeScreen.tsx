@@ -3,7 +3,6 @@ import { CATEGORIES, type Category, type CategoryId } from '../data/categories';
 import { CategoryCard } from '../components/CategoryCard';
 import { JarvisOrb } from '../components/JarvisOrb';
 import { ParentLockButton } from '../components/ParentLockButton';
-import { Toast } from '../components/Toast';
 import { useNow } from '../hooks/useNow';
 import { speak } from '../lib/speak';
 
@@ -14,10 +13,14 @@ function greetingFor(date: Date): { text: string; emoji: string } {
   return { text: '¡Buenas noches!', emoji: '🌙' };
 }
 
-export function HomeScreen({ onOpenCategory }: { onOpenCategory: (id: CategoryId) => void }) {
+interface Props {
+  onOpenCategory: (id: CategoryId) => void;
+  onOpenParent: () => void;
+}
+
+export function HomeScreen({ onOpenCategory, onOpenParent }: Props) {
   const now = useNow();
   const greeting = greetingFor(now);
-  const [toast, setToast] = useState<string | null>(null);
   const [version, setVersion] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,11 +37,6 @@ export function HomeScreen({ onOpenCategory }: { onOpenCategory: (id: CategoryId
     },
     [onOpenCategory],
   );
-
-  const handleParent = useCallback(() => {
-    setToast('Panel de padres con PIN: disponible en la fase 2');
-  }, []);
-  const clearToast = useCallback(() => setToast(null), []);
 
   const time = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
   const day = now.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -76,14 +74,15 @@ export function HomeScreen({ onOpenCategory }: { onOpenCategory: (id: CategoryId
       </section>
 
       {/* Pie */}
-      <footer className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-white/40">
-          {version ? `v${version} · Fase 1` : 'Fase 1'}
+      <footer className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <p className="text-sm font-semibold text-white/40">{version ? `v${version}` : ''}</p>
+        <p className="text-center text-base font-semibold text-white/60">
+          Desarrollado por: <span className="font-black text-white/80">José Lugo</span> · 3126387467
         </p>
-        <ParentLockButton onUnlockRequest={handleParent} />
+        <div className="flex justify-end">
+          <ParentLockButton onUnlockRequest={onOpenParent} />
+        </div>
       </footer>
-
-      {toast && <Toast message={toast} onDone={clearToast} />}
     </main>
   );
 }
