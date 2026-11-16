@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import { CATEGORY_IDS, type AddResult, type CategoryId, type ContentItem } from './ipc-contract';
+import { BUNDLED_LISTS } from './default-videos';
 import { STARTER_PACK } from './starter-pack';
 import { dataPath, readJson, writeJson } from './store';
 import { PLAYLIST_ID, VIDEO_ID, fetchMeta, parseYouTubeInput, resolveChannel, type ParsedYouTube } from './youtube';
@@ -145,11 +146,8 @@ function normalizeCategory(raw: string): CategoryId | null {
   return isCategory(key) ? key : null;
 }
 
-export async function importFromFile(): Promise<AddResult | null> {
-  const file = dataPath(IMPORT_FILE);
-  if (!fs.existsSync(file)) return null;
-
-  const text = fs.readFileSync(file, 'utf8').replace(/^﻿/, '').slice(0, 200_000);
+/** Procesa texto en formato [Categoría] + enlaces. Guarda si añadió algo. */
+async function importText(text: string): Promise<{ result: AddResult; offline: boolean }> {
   const result: AddResult = { added: [], errors: [] };
   let category: CategoryId | null = null;
   let offline = false;
@@ -178,6 +176,37 @@ export async function importFromFile(): Promise<AddResult | null> {
   }
 
   if (result.added.length) save();
+  return { result, offline };
+}
+
+// Listas incluidas dentro de la app (default-videos.ts). Cada una se importa
+// UNA sola vez por equipo: si el padre quita un video, no vuelve a aparecer.
+const BUNDLED_DONE_FILE = 'listas-incluidas.json';
+
+export async function importBundled(): Promise<AddResult | null> {
+  const done = readJson<{ ids?: string[] }>(BUNDLED_DONE_FILE, {});
+  const doneIds = new Set(Array.isArray(done.ids) ? done.ids : []);
+  const pending = BUNDLED_LISTS.filter((l) => !doneIds.has(l.id));
+  if (pending.length === 0) return null;
+
+  const total: AddResult = { added: [], errors: [] };
+  for (const list of pending) {
+    const { result, offline } = await importText(list.text);
+    total.added.push(...result.added);
+    total.errors.push(...result.errors);
+    if (offline) break; // sin Internet: se reintenta en el próximo arranque
+    doneIds.add(list.id);
+  }
+  writeJson(BUNDLED_DONE_FILE, { ids: [...doneIds] });
+  return total;
+}
+
+export async function importFromFile(): Promise<AddResult | null> {
+  const file = dataPath(IMPORT_FILE);
+  if (!fs.existsSync(file)) return null;
+
+  const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '').slice(0, 200_000);
+  const { result, offline } = await importText(text);
 
   if (!offline) {
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');

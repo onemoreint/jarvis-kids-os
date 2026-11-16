@@ -8,7 +8,7 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 - Destino: Windows 11 Pro (x64)
 - Tecnologías: Electron · React · TypeScript · Vite · Tailwind CSS
 
-> **Estado: v0.3** — pantalla de inicio, panel de padres con PIN, lista blanca de
+> **Estado: v0.4** — pantalla de inicio, panel de padres con PIN, lista blanca de
 > videos/listas/canales de YouTube y reproductor protegido. Ver el plan completo en [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md).
 
 ---
@@ -18,20 +18,14 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 1. Descarga: <https://github.com/onemoreint/jarvis-kids-os/releases/latest/download/JARVIS-KIDS-OS-Setup.exe>
 2. Doble clic → SmartScreen: «Más información» → «Ejecutar de todas formas» → aceptar el aviso de administrador.
 3. Se instala para todos los usuarios y se abre sola.
-4. **Actualizar**: primero sal de la app (botón ⏻ Salir + PIN; o usa el script de abajo, que la cierra solo), descarga de nuevo el mismo link y ejecútalo. Se conservan el PIN y los videos.
+4. **Actualizar**: primero sal de la app (botón ⏻ Salir + PIN), descarga de nuevo el mismo link y ejecútalo. Se conservan el PIN y los videos.
 
-### Instalar videos con un script (sin abrir el panel)
+### Videos incluidos
 
-1. Descarga <https://github.com/onemoreint/jarvis-kids-os/releases/latest/download/Instalar-Videos-JARVIS.bat>
-2. Doble clic (en la cuenta de Windows donde se usa la app; no hace falta "Ejecutar como administrador").
-   Si Windows avisa: «Más información» → «Ejecutar de todas formas».
-3. El script cierra la app, la actualiza a la última versión, deja la lista de videos y la vuelve a abrir.
-   Los videos aparecen solos en unos segundos.
-
-Para cambiar los videos, abre el `.bat` con el Bloc de notas y edita la lista
-(`[Categoría]` y debajo los enlaces). El resultado de cada importación queda en
-`%APPDATA%\JARVIS KIDS OS\importado-<fecha>.txt`. También puedes crear a mano
-`%APPDATA%\JARVIS KIDS OS\importar.txt` con el mismo formato: se importa al abrir la app.
+El instalador ya trae una lista de videos (ver `electron/default-videos.ts`). La
+primera vez que se abre la app se añaden solos, cada uno en su categoría. Si
+quitas alguno desde el panel de padres, no vuelve a aparecer. Para añadir otros
+videos usa el panel (⚙️ Padres → Añadir videos).
 
 ### Uso del panel de padres
 

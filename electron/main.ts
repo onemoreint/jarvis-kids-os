@@ -200,13 +200,18 @@ function createWindow(): void {
 
   // Importación pendiente (script "Instalar videos"): cuando la interfaz ya
   // cargó, se procesa importar.txt y se avisa a la interfaz para refrescar.
+  // También se importan (una sola vez) las listas incluidas en el instalador.
   mainWindow.webContents.once('did-finish-load', () => {
-    content
-      .importFromFile()
-      .then((result) => {
-        if (result?.added.length) mainWindow?.webContents.send('content:changed');
-      })
-      .catch((err: unknown) => console.error('[importar]', err));
+    void (async () => {
+      for (const job of [content.importBundled, content.importFromFile]) {
+        try {
+          const result = await job();
+          if (result?.added.length) mainWindow?.webContents.send('content:changed');
+        } catch (err) {
+          console.error('[importar]', err);
+        }
+      }
+    })();
   });
 
   // Alt+F4 / cerrar ventana: bloqueado salvo salida con PIN.
