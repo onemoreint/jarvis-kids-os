@@ -13,6 +13,18 @@ interfaz a pantalla completa, botones grandes, videos educativos de YouTube
 
 ---
 
+## ⚡ Instalación rápida en Windows (sin Node ni Git)
+
+1. En la laptop, inicia sesión en GitHub en el navegador (el repositorio es privado).
+2. Descarga: <https://github.com/onemoreint/jarvis-kids-os/releases/latest/download/JARVIS-KIDS-OS-Setup.exe>
+3. Doble clic → SmartScreen: «Más información» → «Ejecutar de todas formas» → aceptar el aviso de administrador.
+4. Se instala para todos los usuarios y se abre sola. Para salir en la fase 1: `Alt + F4`.
+
+Para publicar una versión nueva desde la Mac: subir `version` en `package.json`,
+`npm run dist:win:desde-mac` y `gh release create vX.Y.Z release/JARVIS-KIDS-OS-Setup.exe`.
+
+---
+
 ## 1. Requisitos
 
 | Herramienta | Versión            | Comprobar            |
